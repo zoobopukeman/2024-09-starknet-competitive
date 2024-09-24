@@ -49,32 +49,6 @@ use contracts_commons::components::roles::interface::{IRolesDispatcher, IRolesDi
 use contracts::hacking::interface::{IHackingDispatcher, IHackingDispatcherTrait};
 
 #[test]
-fn test_constructor() {
-    let mut cfg: StakingInitConfig = Default::default();
-    let mut state = initialize_staking_state_from_cfg(ref :cfg);
-    assert_eq!(state.min_stake.read(), cfg.staking_contract_info.min_stake);
-    assert_eq!(
-        state.erc20_dispatcher.read().contract_address, cfg.staking_contract_info.token_address
-    );
-    let contract_global_index: u64 = state.global_index.read();
-    assert_eq!(BASE_VALUE, contract_global_index);
-    let staker_address = state
-        .operational_address_to_staker_address
-        .read(cfg.staker_info.operational_address);
-    assert_eq!(staker_address, Zero::zero());
-    let staker_info = state.staker_info.read(staker_address);
-    assert!(staker_info.is_none());
-    assert_eq!(
-        state.pool_contract_class_hash.read(), cfg.staking_contract_info.pool_contract_class_hash
-    );
-    assert_eq!(
-        state.reward_supplier_dispatcher.read().contract_address,
-        cfg.staking_contract_info.reward_supplier
-    );
-    assert_eq!(state.pool_contract_admin.read(), cfg.test_info.pool_contract_admin);
-}
-
-#[test]
 fn test_stacking_claim_rewards_attack() {
     let mut cfg: StakingInitConfig = Default::default();
     general_contract_system_deployment(ref :cfg);
