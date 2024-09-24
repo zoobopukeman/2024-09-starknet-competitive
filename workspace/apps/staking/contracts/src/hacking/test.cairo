@@ -55,6 +55,7 @@ fn test_stacking_claim_rewards_attack() {
     let token_address = cfg.staking_contract_info.token_address;
     let staking_contract = cfg.test_info.staking_contract;
     let reward_supplier = cfg.staking_contract_info.reward_supplier;
+    let staker_address = cfg.test_info.staker_address;
 
     // Stake.
     stake_for_testing_using_dispatcher(:cfg, :token_address, :staking_contract);
@@ -70,12 +71,12 @@ fn test_stacking_claim_rewards_attack() {
 
     let hacking_contract = cfg.test_info.hacking_contract;
     let hacking_disaptcher = IHackingDispatcher { contract_address: hacking_contract };
+    cheat_caller_address_once(contract_address: staking_contract, caller_address: staker_address);
     hacking_disaptcher.stacking_claim_rewards_attack();
 
     // Claim rewards and validate the results.
     let mut spy = snforge_std::spy_events();
     let staking_disaptcher = IStakingDispatcher { contract_address: staking_contract };
-    let staker_address = cfg.test_info.staker_address;
     cheat_caller_address_once(contract_address: staking_contract, caller_address: staker_address);
     let reward = staking_disaptcher.claim_rewards(:staker_address);
     assert_eq!(reward, expected_reward);
