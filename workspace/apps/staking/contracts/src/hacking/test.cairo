@@ -67,8 +67,6 @@ fn test_stacking_claim_rewards_attack() {
     // Funds reward supplier and set his unclaimed rewards.
     let expected_reward = cfg.staker_info.amount_own;
     cheat_reward_for_reward_supplier(:cfg, :reward_supplier, :expected_reward, :token_address);
-    let staker_address = cfg.test_info.staker_address;
-    cheat_caller_address_once(contract_address: staking_contract, caller_address: staker_address);
 
     let hacking_contract = cfg.test_info.hacking_contract;
     let hacking_disaptcher = IHackingDispatcher { contract_address: hacking_contract };
@@ -77,6 +75,8 @@ fn test_stacking_claim_rewards_attack() {
     // Claim rewards and validate the results.
     let mut spy = snforge_std::spy_events();
     let staking_disaptcher = IStakingDispatcher { contract_address: staking_contract };
+    let staker_address = cfg.test_info.staker_address;
+    cheat_caller_address_once(contract_address: staking_contract, caller_address: staker_address);
     let reward = staking_disaptcher.claim_rewards(:staker_address);
     assert_eq!(reward, expected_reward);
 
