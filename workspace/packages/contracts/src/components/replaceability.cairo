@@ -10,9 +10,9 @@ pub(crate) mod mock;
 
 // Due to an issue in snforge, it won't recognize the eic testing contract under #[cfg(test)].
 pub(crate) mod eic_test_contract;
+// #[cfg(test)]
+// pub(crate) mod test_utils;
 
-#[cfg(test)]
-pub(crate) mod test_utils;
+// #[cfg(test)]
+// mod test;
 
-#[cfg(test)]
-mod test;

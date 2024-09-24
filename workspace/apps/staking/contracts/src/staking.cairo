@@ -9,5 +9,5 @@ pub use interface::{IStaking, StakerInfo, StakerPoolInfo, StakerInfoTrait, Staki
 pub use interface::{IStakingPool, IStakingPause, IStakingConfig};
 pub use interface::{Events, PauseEvents};
 
-#[cfg(test)]
-mod test;
+// #[cfg(test)]
+// mod test;

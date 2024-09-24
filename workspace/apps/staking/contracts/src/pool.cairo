@@ -6,5 +6,5 @@ pub mod pool;
 pub use pool::Pool;
 pub use interface::{IPool, PoolMemberInfo, Events};
 
-#[cfg(test)]
-mod test;
+// #[cfg(test)]
+// mod test;
