@@ -18,3 +18,8 @@ test = "snforge test"
 
 [[target.starknet-contract]]
 build-external-contracts = ["contracts_commons::erc20_mocks::DualCaseERC20Mock"]
+
+[[tool.snforge.fork]]
+name = "DEVNET"
+url = "http://127.0.0.1:5050"
+block_id.tag = "Latest"

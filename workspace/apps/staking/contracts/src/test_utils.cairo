@@ -4,6 +4,7 @@ use contracts::constants::{BASE_VALUE, DEFAULT_EXIT_WAIT_WINDOW, DEFAULT_C_NUM, 
 use core::traits::Into;
 use contracts::staking::interface::{IStaking, StakerInfo, StakerPoolInfo};
 use contracts::staking::interface::{StakingContractInfo, IStakingDispatcher};
+use contracts::staking::interface::{HackingContractInfo,};
 use contracts::staking::interface::{IStakingDispatcherTrait, StakerInfoTrait};
 use core::num::traits::zero::Zero;
 use contracts_commons::components::roles::interface::{IRolesDispatcher, IRolesDispatcherTrait};
@@ -20,6 +21,7 @@ use constants::{TOKEN_ADDRESS, COMMISSION, POOL_CONTRACT_ADDRESS, POOL_MEMBER_ST
 use constants::{POOL_MEMBER_ADDRESS, POOL_MEMBER_REWARD_ADDRESS, POOL_MEMBER_INITIAL_BALANCE};
 use constants::{BASE_MINT_AMOUNT, BUFFER, L1_STAKING_MINTER_ADDRESS, BASE_MINT_MSG};
 use constants::{STAKING_CONTRACT_ADDRESS, MINTING_CONTRACT_ADDRESS, STARKGATE_ADDRESS};
+use constants::{HACKING_CONTRACT_ADDRESS};
 use constants::{REWARD_SUPPLIER_CONTRACT_ADDRESS, POOL_CONTRACT_ADMIN, SECURITY_ADMIN};
 use constants::{SECURITY_AGENT, APP_GOVERNER, GOVERNANCE_ADMIN, OPERATOR_CONTRACT_ADDRESS};
 use contracts_commons::test_utils::cheat_caller_address_once;
@@ -82,6 +84,9 @@ pub(crate) mod constants {
     }
     pub fn STAKING_CONTRACT_ADDRESS() -> ContractAddress {
         contract_address_const::<'STAKING_CONTRACT_ADDRESS'>()
+    }
+    pub fn HACKING_CONTRACT_ADDRESS() -> ContractAddress {
+        contract_address_const::<'HACKING_CONTRACT_ADDRESS'>()
     }
     pub fn OPERATOR_CONTRACT_ADDRESS() -> ContractAddress {
         contract_address_const::<'OPERATOR_CONTRACT_ADDRESS'>()
@@ -282,6 +287,17 @@ pub(crate) fn deploy_staking_contract(
     let (staking_contract_address, _) = staking_contract.deploy(@calldata).unwrap();
     set_default_roles(staking_contract: staking_contract_address, :cfg);
     staking_contract_address
+}
+
+pub(crate) fn deploy_hacking_contract(
+    staking_contract: ContractAddress, token_address: ContractAddress,
+) -> ContractAddress {
+    let mut calldata = ArrayTrait::new();
+    staking_contract.serialize(ref calldata);
+    token_address.serialize(ref calldata);
+    let hacking_contract = snforge_std::declare("Hacking").unwrap();
+    let (hacking_contract_address, _) = hacking_contract.deploy(@calldata).unwrap();
+    hacking_contract_address
 }
 
 pub(crate) fn set_default_roles(staking_contract: ContractAddress, cfg: StakingInitConfig) {
@@ -616,6 +632,11 @@ pub fn general_contract_system_deployment(ref cfg: StakingInitConfig) {
         account: operator_contract,
         security_admin: cfg.test_info.security_admin
     );
+
+    let hacking_contract = deploy_hacking_contract(:staking_contract, :token_address);
+    cfg.hacking_contract_info.staking_contract = staking_contract;
+    cfg.hacking_contract_info.token_address = token_address;
+    cfg.test_info.hacking_contract = hacking_contract;
 }
 
 pub fn cheat_reward_for_reward_supplier(
@@ -678,6 +699,7 @@ pub(crate) struct TestInfo {
     pub pool_member_initial_balance: u128,
     pub pool_enabled: bool,
     pub staking_contract: ContractAddress,
+    pub hacking_contract: ContractAddress,
     pub operator_contract: ContractAddress,
     pub pool_contract_admin: ContractAddress,
     pub security_admin: ContractAddress,
@@ -700,6 +722,7 @@ pub(crate) struct StakingInitConfig {
     pub staker_info: StakerInfo,
     pub pool_member_info: PoolMemberInfo,
     pub staking_contract_info: StakingContractInfo,
+    pub hacking_contract_info: HackingContractInfo,
     pub minting_curve_contract_info: MintingCurveContractInfo,
     pub test_info: TestInfo,
     pub reward_supplier: RewardSupplierInfo,
@@ -739,6 +762,9 @@ impl StakingInitConfigDefault of Default<StakingInitConfig> {
             reward_supplier: REWARD_SUPPLIER_CONTRACT_ADDRESS(),
             exit_wait_window: DEFAULT_EXIT_WAIT_WINDOW
         };
+        let hacking_contract_info = HackingContractInfo {
+            staking_contract: STAKING_CONTRACT_ADDRESS(), token_address: TOKEN_ADDRESS(),
+        };
         let minting_curve_contract_info = MintingCurveContractInfo {
             c_num: DEFAULT_C_NUM, c_denom: C_DENOM,
         };
@@ -752,6 +778,7 @@ impl StakingInitConfigDefault of Default<StakingInitConfig> {
             pool_member_initial_balance: POOL_MEMBER_INITIAL_BALANCE,
             pool_enabled: false,
             staking_contract: STAKING_CONTRACT_ADDRESS(),
+            hacking_contract: HACKING_CONTRACT_ADDRESS(),
             operator_contract: OPERATOR_CONTRACT_ADDRESS(),
             pool_contract_admin: POOL_CONTRACT_ADMIN(),
             security_admin: SECURITY_ADMIN(),
@@ -770,6 +797,7 @@ impl StakingInitConfigDefault of Default<StakingInitConfig> {
             staker_info,
             pool_member_info,
             staking_contract_info,
+            hacking_contract_info,
             minting_curve_contract_info,
             test_info,
             reward_supplier

@@ -145,6 +145,12 @@ pub struct StakingContractInfo {
     pub exit_wait_window: u64
 }
 
+#[derive(Copy, Debug, Drop, PartialEq, Serde)]
+pub struct HackingContractInfo {
+    pub staking_contract: ContractAddress,
+    pub token_address: ContractAddress,
+}
+
 /// Public interface for the staking contract.
 /// This interface is exposed by the operator contract.
 #[starknet::interface]
